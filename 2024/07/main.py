@@ -1,17 +1,10 @@
-import timeit
 from multiprocessing import Pool
+import timeit
 import multiprocessing
 import math
 
-# def process_file():
-#     l = []
-#     with open('input.txt') as file:
-#         for line in file:
-#             l.append(line.strip())
-#     return l
-
 def row_generator(filename):
-    # This generator yields lines one by one, rather than returning a large list.
+    # Row generator rather than returning entire file. didn't actually save much time though
     with open(filename, 'r') as f:
         for line in f:
             yield line.strip()
@@ -26,9 +19,8 @@ def check_row(row):
         for j in l:
             temp_list.append(j+i)
             temp_list.append(i*j)
-            # digits = len(str(i))
-            digits = int(math.log10(i)) + 1
-            concat_val = j * (10 ** digits) + i
+            digits = int(math.log10(i)) + 1 #math is faster than len(str(i))
+            concat_val = j * (10 ** digits) + i #math is much faster than int(str(j)+str(i)) 
             temp_list.append(concat_val)
         l = temp_list
     if target in l:
@@ -36,10 +28,9 @@ def check_row(row):
     else:
         return 0
 
-
 def main():
     with Pool(processes=12) as p:
-        # imap lazily consumes the generator, so we don't store all lines in memory at once.
+        #imap over map to make use of generator and get started calculating faster
         results = p.imap(check_row, row_generator('input.txt'))
         total = sum(results)
     print(total)
@@ -48,14 +39,23 @@ if __name__ == "__main__":
     print(multiprocessing.cpu_count())
     duration = timeit.timeit("main()", globals=globals(), number=1)
     print("Duration:", duration)
-    #Test 1 speed: 6.630317799994373s
-    #Test 2 changes: Stopped copying temp_list, just reassigned l to temp_list
-    #Test 2 speed: 6.463524899998447s
-    #Test 3 changes: Removing all print statements
-    #Test 3 speed: 6.3357784999971045s
-    #Test 4 changes: Multiprocessing
-    #Test 4 speed: 1.807641599996714s
-    #Test 5 changes: Changed from string concatenation to math for concatenating characters
-    #Test 5 speed: 1.3771873000077903s
-    #Test 6 changes: Changed Pool().map to Pool().imap and changed file loading to file streaming
-    #Test 6 speed: 1.284683000005316s
+
+""" 
+    Test 1: baseline speed on first solve
+    Time: 6.6303s 
+
+    Test 2: Stopped using temp_list.copy() and just reassigned l to temp_list. No need to copy
+    Time: 6.4635s
+        
+    Test 3: Removed all print statements 
+    Time: 6.3357s
+
+    Test 4: Set up multiprocessing with Pool().map()
+    Time: 1.8076s
+
+    Test 5: Changed from string concatenation to math for concatenating numbers
+    Time: 1.3771s
+
+    Test 6: Changed Pool().map to Pool().imap and changed file loading to file streaming
+    Time: 1.2846s
+    """
