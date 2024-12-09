@@ -58,4 +58,9 @@ if __name__ == "__main__":
 
     Test 6: Changed Pool().map to Pool().imap and changed file loading to file streaming
     Time: 1.2846s
+    
+    Possible improvements: 
+        1. Depth first search, return early if number is greater than target, or if match is found.
+        2. 
+    
     """
