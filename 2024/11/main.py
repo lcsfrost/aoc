@@ -54,5 +54,8 @@ def main():
     print(f"Number of stones after 25 blinks: {count_stones(stones, 25)}")
     print(f"Number of stones after 75 blinks: {count_stones(stones, 75)}")
     print(time.perf_counter()-start)
+
+
+    
 if __name__ == "__main__":
     main()
