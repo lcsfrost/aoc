@@ -1,5 +1,8 @@
 import sys
 import math
+import time
+
+start = time.perf_counter()
 
 def process_file():
     d = {}
@@ -9,13 +12,6 @@ def process_file():
                 d[(i,j)] = char
     return d
 
-def process_file_test():
-    d = {}
-    with open("test.txt") as file:
-        for i, line in enumerate(file):
-            for j, char in enumerate(line.strip()):
-                d[(i,j)] = char
-    return d
 
 def define_directions():
     d = [(0,1),
@@ -68,12 +64,12 @@ def find_region(coords, target_letter, other_regions, region = None, visited_coo
         return region, visited_coords
 
 def find_perimeter(region):
-    perimeter = len(region) * len(define_directions())
+    perimeter = 0
     for coords in region:
         for d in define_directions():
             new_coords = tuple((a+b for a, b in zip(coords,d)))
-            if coords_to_letter_dict[coords] == coords_to_letter_dict.get(new_coords,0):
-                perimeter -= 1 #Letter is the same, perimeter is smaller.
+            if coords_to_letter_dict[coords] != coords_to_letter_dict.get(new_coords,0):
+                perimeter += 1 #Letter is the same, perimeter is smaller.
     return perimeter
 
 def find_number_of_sides(region):
@@ -84,6 +80,7 @@ def find_number_of_sides(region):
     # BBCC
     # EEEC
     #In the above example, region "B" would have four sides, each of length 2.
+    
     number_of_sides = 0
     visited_coords_and_direction = set()
     for coords in region: #Check each location
@@ -91,7 +88,7 @@ def find_number_of_sides(region):
             t = (coords,d)
             # print(f"Checking tuple {t} against {visited_coords_and_direction}")
             if t in visited_coords_and_direction: #Check if this cell/vector has been included in another fence
-                print(f"{t} is already in {visited_coords_and_direction}")
+                # print(f"{t} is already in {visited_coords_and_direction}")
                 continue #Move on to next direction
             new_coords = tuple((a+b for a, b in zip(coords,d))) 
             if coords_to_letter_dict[coords] != coords_to_letter_dict.get(new_coords,0): #Letter is not the same, so this is a fence.
@@ -105,8 +102,15 @@ def find_length_of_fence(coords, direction):
     letter = coords_to_letter_dict[coords]
     visited_cells.add((coords, direction))
 
+    def rotate_clockwise(vector):
+        x,y = vector
+        return (y, -x)
 
+    def rotate_counterclockwise(vector):
+        x, y = vector
+        return (-y,x)
     #Checking perpendicular direction A
+
     clockwise_direction = rotate_clockwise(direction)
     new_coords = tuple((a+b for a, b in zip(coords, clockwise_direction)))
     other_side_of_fence_coord = tuple((a+b for a,b in zip(new_coords, direction)))
@@ -124,57 +128,39 @@ def find_length_of_fence(coords, direction):
         visited_cells.add((new_coords, direction)) #Storing the direction we're currently evaluating.
         new_coords = tuple((a+b for a, b in zip(new_coords, counter_clockwise_direction)))
         other_side_of_fence_coord = tuple((a+b for a, b in zip(new_coords, direction)))
-
-
     return visited_cells
 
-def rotate_clockwise(vector):
-    x,y = vector
-    return (y, -x)
 
-def rotate_counterclockwise(vector):
-    x, y = vector
-    return (-y,x)
 
-def part_one():
+def find_regions():
     unique_regions = {}
     existing_regions = set()
-    sys.setrecursionlimit(10000)
     for coords in coords_to_letter_dict:
         if coords not in existing_regions:
             region_set, visited_coords = find_region(coords, coords_to_letter_dict[coords], existing_regions)
-            # print(coords, '\n\n',region_set,'\n')
             unique_regions[coords] = region_set
             existing_regions |= region_set
+    return unique_regions
+
+def calculate_price(unique_regions, calculation_function):
     price = 0
     for k, v in unique_regions.items():
         area = len(v)
-        perimeter = find_perimeter(v)
-        print(f"Letter {coords_to_letter_dict[k]} has a perimeter of {perimeter}.")
-        price += area * perimeter
-    print(f"Total price should be {price}")
+        metric = calculation_function(v)
+        price += area * metric
+    return price
 
-def part_two():
-    unique_regions = {}
-    existing_regions = set()
-    sys.setrecursionlimit(10000)
-    for coords in coords_to_letter_dict:
-        if coords not in existing_regions:
-            region_set, visited_coords = find_region(coords, coords_to_letter_dict[coords], existing_regions)
-            unique_regions[coords] = region_set
-            existing_regions |= region_set
-    total_price = 0
-    for k, v in unique_regions.items():
-        area = len(v)
-        number_of_sides = find_number_of_sides(v)
-        price_increase = area * number_of_sides
-        print(f"Letter {coords_to_letter_dict[k]} has {number_of_sides} sides for a price of {price_increase}")
-        total_price += price_increase
+def part_one(unique_regions):
+    total_price = calculate_price(unique_regions, find_perimeter)
     print(f"Total price should be {total_price}")
 
-
+def part_two(unique_regions):
+    total_price = calculate_price(unique_regions, find_number_of_sides)
+    print(f"Total price should be {total_price}")
 
 if __name__ == "__main__":
-    # part_one()
-    part_two()
-    # test_part_two()
+    unique_regions = find_regions()
+    part_one(unique_regions)
+    part_two(unique_regions)
+
+print(f"{time.perf_counter()-start:.2f}")
