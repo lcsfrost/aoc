@@ -56,16 +56,16 @@ def solve_part_two(a: list[tuple],b: list[tuple],c: list[tuple]) -> int:
         xa, ya = a
         xb, yb = b
         xtarget, ytarget = target
-        xtarget += 10000000000000
-        ytarget += 10000000000000
+        # xtarget += 10000000000000
+        # ytarget += 10000000000000
         i = (yb*xtarget-xb*ytarget)//(yb*xa-xb*ya)
         j = (ya*xtarget-xa*ytarget)//(ya*xb-xa*yb)
+        print(i,j)
         if xa*i+xb*j == xtarget and ya*i + yb*j == ytarget:
             token_cost = i*3+j
             total_tokens += token_cost
+            print("solved")
     return total_tokens
-
-
 
 def main():
     a,b,c = process_file()
@@ -73,9 +73,6 @@ def main():
     # print(total_tokens)
     total_tokens = solve_part_two(a,b,c)
     print(total_tokens)
-
-
-
 
 if __name__ == "__main__":
     main()
