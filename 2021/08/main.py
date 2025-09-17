@@ -35,16 +35,33 @@ def parse_row(row):
 
 def solve_part_one():
     signal_list = process_file()
-    
-    d = {}
     # for i, j in signal_list:
         # print(i, j)
-    build_dict(signal_list[0][0])
-    return
+    d = {}
+    count = 0
+    for i in signal_list:
+        d = build_dict(i[0])
+        for j in i[1]:
+            num = d[tuple(sorted(j))]
+            if num in [1,4,7,8]:
+                count += 1
+    return count
 
 def solve_part_two():
-    l = process_file()
-    return
+    signal_list = process_file()
+    # for i, j in signal_list:
+        # print(i, j)
+    d = {}
+    count = 0
+    for i in signal_list:
+        d = build_dict(i[0])
+        num_digits = []
+        for j in i[1]:
+            num = d[tuple(sorted(j))]
+            num_digits.append(num)
+        num_str = ''.join([(str(x)) for x in num_digits])
+        count += int(num_str)
+    return count
 
 def build_dict(signal_patterns):
     """Accepts list of 10 signal segment patterns
@@ -54,14 +71,14 @@ def build_dict(signal_patterns):
     d = {}
     while len(d) < len(signal_patterns):
         i = 0
-        print(d)
-        print(sorted([x for x in d.values()]))
+        # print(d)
+        # print(sorted([x for x in d.values()]))
         while i < len(signal_patterns):
             segments_set = set(tuple(signal_patterns[i]))
             segment_count = len(segments_set)
-            segment_tuple = tuple(segments_set)
+            segment_tuple = tuple(sorted(segments_set))
             if segment_tuple not in d:
-                print(segment_count, segments_set)
+                # print(segment_count, segments_set)
                 match segment_count:
                     case 6: #6 segments, can be 6, or 0
                         one_matches = [k for k, v in d.items() if v == 1]
@@ -70,20 +87,22 @@ def build_dict(signal_patterns):
                             if len(segments_set.intersection(set(one_matches[0]))) == 1: #1 and 6 have 1 line segment in common
                                 d[segment_tuple] = 6
                             elif len(segments_set.intersection(set(one_matches[0]))) == 2:
-                                if len(segments_set.intersection(set(four_matches[0]))) == 3:
-                                    d[segment_tuple] = 0 #matches 0 AND 9. No good. 
-                                elif len(segments_set.intersection(set(four_matches[0]))) == 4:
-                                    d[segment_tuple] = 9
+                                if four_matches:
+                                    if len(segments_set.intersection(set(four_matches[0]))) == 3:
+                                        d[segment_tuple] = 0 #matches 0 AND 9. No good. 
+                                    elif len(segments_set.intersection(set(four_matches[0]))) == 4:
+                                        d[segment_tuple] = 9
                     case 5: #5 segments, can be 2, 5, or 3\
                         one_matches = [k for k, v in d.items() if v == 1]
                         four_matches = [k for k, v in d.items() if v == 4]
                         if one_matches:
                             if len(segments_set.intersection(set(one_matches[0]))) == 2: #Matches 3
                                 d[segment_tuple] = 3
-                            elif len(segments_set.intersection(set(four_matches[0]))) == 3: #Matches 5
-                                d[segment_tuple] = 5
-                            elif len(segments_set.intersection(set(four_matches[0]))) == 2: #Matches 5
-                                d[segment_tuple] = 2
+                            elif four_matches:
+                                if len(segments_set.intersection(set(four_matches[0]))) == 3: #Matches 5
+                                    d[segment_tuple] = 5
+                                elif len(segments_set.intersection(set(four_matches[0]))) == 2: #Matches 5
+                                    d[segment_tuple] = 2
                     case 2:
                         d[segment_tuple] = 1
                     case 3:
@@ -96,8 +115,6 @@ def build_dict(signal_patterns):
     for k, v in dict(sorted(d.items(), key = lambda item: item[1])).items():
         print(v, k)
     return d
-
-
 
 def process_file():
     l = []
